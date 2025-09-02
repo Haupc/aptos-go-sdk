@@ -1170,6 +1170,33 @@ func (rc *NodeClient) View(payload *ViewPayload, ledgerVersion ...uint64) ([]any
 	return data, nil
 }
 
+func (rc *NodeClient) ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error {
+	serializer := bcs.Serializer{}
+	payload.MarshalBCS(&serializer)
+	err := serializer.Error()
+	if err != nil {
+		return err
+	}
+	sblob := serializer.ToBytes()
+	bodyReader := bytes.NewReader(sblob)
+	au := rc.baseUrl.JoinPath("view")
+	if len(ledgerVersion) > 0 {
+		params := url.Values{}
+		params.Set("ledger_version", strconv.FormatUint(ledgerVersion[0], 10))
+		au.RawQuery = params.Encode()
+	}
+
+	blob, err := Post[json.RawMessage](rc, au.String(), ContentTypeAptosViewFunctionBcs, bodyReader)
+	if err != nil {
+		return fmt.Errorf("view function api err: %w", err)
+	}
+	err = json.Unmarshal(blob, response)
+	if err != nil {
+		return fmt.Errorf("view function api err: %w", err)
+	}
+	return nil
+}
+
 // EstimateGasPrice estimates the gas price given on-chain data
 // TODO: add caching for some period of time
 func (rc *NodeClient) EstimateGasPrice() (EstimateGasInfo, error) {
