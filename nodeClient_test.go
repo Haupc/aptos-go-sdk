@@ -299,11 +299,11 @@ func TestNodeClient_ViewWithResponse(t *testing.T) {
 		type innerObj struct {
 			Inner string `json:"inner"`
 		}
-		resp := []innerObj{
+		resp := []any{[]innerObj{
 			{Inner: "0xa"},
 			{Inner: "0xa0d9d647c5737a5aed08d2cfeb39c31cf901d44bc4aa024eaa7e5e68b804e011"},
 			{Inner: "0xaef6a8c3182e076db72d64324617114cacf9a52f28325edc10b483f7f05da0e7"},
-		}
+		}}
 		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer mockServer.Close()
