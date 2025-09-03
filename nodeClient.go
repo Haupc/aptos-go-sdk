@@ -1190,7 +1190,7 @@ func (rc *NodeClient) ViewWithResponse(response any, payload *ViewPayload, ledge
 	if err != nil {
 		return fmt.Errorf("view function api err: %w", err)
 	}
-	err = json.Unmarshal(blob, response)
+	err = json.Unmarshal(blob, &[]any{response})
 	if err != nil {
 		return fmt.Errorf("view function api err: %w", err)
 	}
