@@ -280,3 +280,57 @@ func TestEventsByCreationNumber(t *testing.T) {
 		assert.Equal(t, uint64(54), events[4].SequenceNumber)
 	})
 }
+
+func TestNodeClient_ViewWithResponse(t *testing.T) {
+	t.Parallel()
+
+	// Mock /view endpoint to return the provided JSON
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			// Some clients may probe root; return OK
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		assert.Equal(t, "/view", r.URL.Path)
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, ContentTypeAptosViewFunctionBcs, r.Header.Get("Content-Type"))
+
+		type innerObj struct {
+			Inner string `json:"inner"`
+		}
+		resp := []innerObj{
+			{Inner: "0xa"},
+			{Inner: "0xa0d9d647c5737a5aed08d2cfeb39c31cf901d44bc4aa024eaa7e5e68b804e011"},
+			{Inner: "0xaef6a8c3182e076db72d64324617114cacf9a52f28325edc10b483f7f05da0e7"},
+		}
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer mockServer.Close()
+
+	client, err := NewClient(NetworkConfig{
+		Name:    "mocknet",
+		NodeUrl: mockServer.URL,
+	})
+	require.NoError(t, err)
+
+	// Build a simple view payload (values not checked by server)
+	payload := &ViewPayload{
+		Module:   ModuleId{Address: AccountOne, Name: "coin"},
+		Function: "balance",
+		ArgTypes: []TypeTag{AptosCoinTypeTag},
+		Args:     [][]byte{AccountOne[:]},
+	}
+
+	type innerObj struct {
+		Inner string `json:"inner"`
+	}
+	var out []innerObj
+	err = client.nodeClient.ViewWithResponse(&out, payload)
+	require.NoError(t, err)
+
+	require.Len(t, out, 3)
+	assert.Equal(t, "0xa", out[0].Inner)
+	assert.Equal(t, "0xa0d9d647c5737a5aed08d2cfeb39c31cf901d44bc4aa024eaa7e5e68b804e011", out[1].Inner)
+	assert.Equal(t, "0xaef6a8c3182e076db72d64324617114cacf9a52f28325edc10b483f7f05da0e7", out[2].Inner)
+}

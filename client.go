@@ -452,6 +452,28 @@ type AptosRpcClient interface {
 	//		balance := StrToU64(vals.(any[])[0].(string))
 	View(payload *ViewPayload, ledgerVersion ...uint64) ([]any, error)
 
+	// ViewWithResponse runs a view function and unmarshals the JSON result into
+	// the provided `response` destination.
+	//
+	// The `response` argument must be a pointer to a value whose shape matches the
+	// view function return data (e.g., a slice or struct with appropriate JSON
+	// tags). Optionally, pass `ledgerVersion` to query a specific version.
+	//
+	//	address := AccountOne
+	//	payload := &ViewPayload{
+	//		Module: ModuleId{
+	//			Address: AccountOne,
+	//			Name:    "coin",
+	//		},
+	//		Function: "balance",
+	//		ArgTypes: []TypeTag{AptosCoinTypeTag},
+	//		Args:     [][]byte{address[:]},
+	//	}
+	//	var out []string
+	//	err := client.ViewWithResponse(&out, payload)
+	//	// out[0] contains the balance as a string
+	ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error
+
 	// EstimateGasPrice Retrieves the gas estimate from the network.
 	EstimateGasPrice() (EstimateGasInfo, error)
 
@@ -935,6 +957,30 @@ func (client *Client) BuildSignAndSubmitTransaction(sender TransactionSigner, pa
 //		balance := StrToU64(vals.(any[])[0].(string))
 func (client *Client) View(payload *ViewPayload, ledgerVersion ...uint64) ([]any, error) {
 	return client.nodeClient.View(payload, ledgerVersion...)
+}
+
+// ViewWithResponse runs a view function and unmarshals the JSON result into
+// the provided `response` destination.
+//
+// The `response` argument must be a pointer to a value whose shape matches the
+// view function return data (e.g., a slice or struct with appropriate JSON
+// tags). Optionally, pass `ledgerVersion` to query a specific version.
+//
+//	address := AccountOne
+//	payload := &ViewPayload{
+//		Module: ModuleId{
+//			Address: AccountOne,
+//			Name:    "coin",
+//		},
+//		Function: "balance",
+//		ArgTypes: []TypeTag{AptosCoinTypeTag},
+//		Args:     [][]byte{address[:]},
+//	}
+//	var out []string
+//	err := client.ViewWithResponse(&out, payload)
+//	// out[0] contains the balance as a string
+func (client *Client) ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error {
+	return client.nodeClient.ViewWithResponse(response, payload, ledgerVersion...)
 }
 
 // EstimateGasPrice Retrieves the gas estimate from the network.
