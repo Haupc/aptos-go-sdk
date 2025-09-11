@@ -1170,7 +1170,7 @@ func (rc *NodeClient) View(payload *ViewPayload, ledgerVersion ...uint64) ([]any
 	return data, nil
 }
 
-func (rc *NodeClient) ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error {
+func (rc *NodeClient) ViewWithResponse(payload *ViewPayload, ledgerVersion *uint64, response ...any) error {
 	serializer := bcs.Serializer{}
 	payload.MarshalBCS(&serializer)
 	err := serializer.Error()
@@ -1180,9 +1180,9 @@ func (rc *NodeClient) ViewWithResponse(response any, payload *ViewPayload, ledge
 	sblob := serializer.ToBytes()
 	bodyReader := bytes.NewReader(sblob)
 	au := rc.baseUrl.JoinPath("view")
-	if len(ledgerVersion) > 0 {
+	if ledgerVersion != nil {
 		params := url.Values{}
-		params.Set("ledger_version", strconv.FormatUint(ledgerVersion[0], 10))
+		params.Set("ledger_version", strconv.FormatUint(*ledgerVersion, 10))
 		au.RawQuery = params.Encode()
 	}
 
@@ -1190,7 +1190,7 @@ func (rc *NodeClient) ViewWithResponse(response any, payload *ViewPayload, ledge
 	if err != nil {
 		return fmt.Errorf("view function api err: %w", err)
 	}
-	err = json.Unmarshal(blob, &[]any{response})
+	err = json.Unmarshal(blob, &response)
 	if err != nil {
 		return fmt.Errorf("view function api err: %w", err)
 	}

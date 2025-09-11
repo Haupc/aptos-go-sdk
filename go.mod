@@ -9,6 +9,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/hasura/go-graphql-client v0.13.1
 	github.com/hdevalence/ed25519consensus v0.2.0
+	github.com/holiman/uint256 v1.3.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.37.0
 )

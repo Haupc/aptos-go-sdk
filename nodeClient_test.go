@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -303,7 +304,7 @@ func TestNodeClient_ViewWithResponse(t *testing.T) {
 			{Inner: "0xa"},
 			{Inner: "0xa0d9d647c5737a5aed08d2cfeb39c31cf901d44bc4aa024eaa7e5e68b804e011"},
 			{Inner: "0xaef6a8c3182e076db72d64324617114cacf9a52f28325edc10b483f7f05da0e7"},
-		}}
+		}, "10", "11"}
 		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer mockServer.Close()
@@ -326,11 +327,15 @@ func TestNodeClient_ViewWithResponse(t *testing.T) {
 		Inner string `json:"inner"`
 	}
 	var out []innerObj
-	err = client.nodeClient.ViewWithResponse(&out, payload)
+	var u1 *uint256.Int
+	var u2 *uint256.Int
+	err = client.nodeClient.ViewWithResponse(payload, nil, &out, &u1, &u2)
 	require.NoError(t, err)
 
 	require.Len(t, out, 3)
 	assert.Equal(t, "0xa", out[0].Inner)
 	assert.Equal(t, "0xa0d9d647c5737a5aed08d2cfeb39c31cf901d44bc4aa024eaa7e5e68b804e011", out[1].Inner)
 	assert.Equal(t, "0xaef6a8c3182e076db72d64324617114cacf9a52f28325edc10b483f7f05da0e7", out[2].Inner)
+	assert.Equal(t, u1.Eq(uint256.NewInt(10)), true)
+	assert.Equal(t, u2.Eq(uint256.NewInt(11)), true)
 }

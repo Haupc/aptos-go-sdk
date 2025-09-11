@@ -472,7 +472,7 @@ type AptosRpcClient interface {
 	//	var out []string
 	//	err := client.ViewWithResponse(&out, payload)
 	//	// out[0] contains the balance as a string
-	ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error
+	ViewWithResponse(payload *ViewPayload, ledgerVersion *uint64, response ...any) error
 
 	// EstimateGasPrice Retrieves the gas estimate from the network.
 	EstimateGasPrice() (EstimateGasInfo, error)
@@ -979,8 +979,8 @@ func (client *Client) View(payload *ViewPayload, ledgerVersion ...uint64) ([]any
 //	var out []string
 //	err := client.ViewWithResponse(&out, payload)
 //	// out[0] contains the balance as a string
-func (client *Client) ViewWithResponse(response any, payload *ViewPayload, ledgerVersion ...uint64) error {
-	return client.nodeClient.ViewWithResponse(response, payload, ledgerVersion...)
+func (client *Client) ViewWithResponse(payload *ViewPayload, ledgerVersion *uint64, response ...any) error {
+	return client.nodeClient.ViewWithResponse(payload, ledgerVersion, response...)
 }
 
 // EstimateGasPrice Retrieves the gas estimate from the network.
